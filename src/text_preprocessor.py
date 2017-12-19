@@ -43,6 +43,9 @@ def strip_punctuation(text_lines):
 
 
 def strip_redundant_chars_words(text_lines):
+    """
+    Removes stop words then stems the remaining words
+    """
     stop_words = set(stopwords.words('english'))
     result = []
     st = LancasterStemmer()
@@ -57,6 +60,9 @@ def strip_redundant_chars_words(text_lines):
 
 
 def strip(tweet_lines):
+    """
+    Removes unwanted charactes from tweets on multiple stages
+    """
     mention_stripped = strip_mentions(tweet_lines)
     del tweet_lines
 
@@ -72,15 +78,22 @@ def strip(tweet_lines):
     return stopwords_stipped
 
 
-def read_raw(file_name):
+def read_raw_lower_cased(file_name):
+    """
+    Loads all text as a single string from data.
+    """
+
     # load data
     fd = open(file_name, encoding='UTF-8')
 
     text = fd.read()
-    return text  # Remove first line
+    return text.lower()
 
 
 def print_stats(stripped_text):
+    """
+    Creates some statistics about the provided text like word count
+    """
     # filter out stop words
     words = []
     for line in stripped_text:
@@ -102,13 +115,15 @@ def print_stats(stripped_text):
 
 
 def preprocess(file_name):
-    text = read_raw(file_name)
-    # read emojis and remove it
-    text = text.lower()
+    text = read_raw_lower_cased(file_name)
+
     text_lines = text.split("\n")
     text_lines = list(filter(None, text_lines))  # Remove empty entries
 
-    result = partitionize(text_lines[1:])
+    result = partitionize(text_lines[1:])  # Remove first line
+
+    # Cleanup
+    del text
     del text_lines
 
     stripped_text = strip([data_line[0] for data_line in result])
