@@ -1,4 +1,5 @@
 import re
+import string
 import sys
 from collections import Counter, OrderedDict
 
@@ -26,7 +27,7 @@ def partitionize(raw_lines):
         split_line = split_line[1:]  # Remove tweet id
         tweet = split_line[0]
         feeling = split_line[1]
-        intensity = split_line[2]
+        intensity = split_line[2].split(":")[0]  # Take the number of sadness amount only
         result.append([tweet, feeling, intensity])
     return result
 
@@ -37,22 +38,15 @@ def strip_mentions(text_lines):
     return [mention_pattern.sub('', l) for l in text_lines]
 
 
+def strip_punctuation(text_lines):
+    translator = str.maketrans('', '', string.punctuation)
+    return [l.translate(translator) for l in text_lines]
+
+
 def strip_redundant_chars_words(text_lines):
     """
     Removes stop words then stems the remaining words
     """
-
-    def sanitize_chars(word):
-        """
-        Removes non alphanum chars in a given word
-        """
-        sanitized = ""
-        for c in word:
-            if not str.isalnum(c):
-                continue
-            sanitized += c
-
-        return sanitized
 
     stop_words = set(stopwords.words('english'))
     result = []
@@ -60,7 +54,7 @@ def strip_redundant_chars_words(text_lines):
 
     for i, line in enumerate(text_lines):
         split_line = line.split()
-        resultwords = [st.stem(sanitize_chars(word.strip())) for word in split_line if word not in stop_words]
+        resultwords = [st.stem(word.strip()) for word in split_line if word not in stop_words]
         result.append(' '.join(resultwords))
 
     return result
@@ -81,8 +75,11 @@ def strip(tweet_lines):
     stopwords_stripped = strip_redundant_chars_words(mention_stripped)
     del mention_stripped
 
-    space_stripped = strip_extra_space(stopwords_stripped)
+    puncutation_stripped = strip_punctuation(stopwords_stripped)
     del stopwords_stripped
+
+    space_stripped = strip_extra_space(puncutation_stripped)
+    del puncutation_stripped
 
     return space_stripped
 
@@ -150,7 +147,7 @@ def main():
     if check_debug():
         # In debug mode
         # file_name = input("Filename:")
-        file_name = "../../dataset/english_dev/2018-EI-reg-En-sadness-dev.txt"
+        file_name = "../../dataset/english_dev/2018-EI-oc-En-sadness-dev.txt"
     else:
         file_name = sys.argv[1]
 
