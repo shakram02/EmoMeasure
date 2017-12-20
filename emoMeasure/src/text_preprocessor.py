@@ -168,7 +168,7 @@ def main():
         # TODO write file content
         for entry in processed_input:
             # Write only factor and the tweet
-            out_file.write("\t".join([entry[1], entry[0]]) + "\n")
+            out_file.write("\t".join([entry[2], entry[0]]) + "\n")
             tweet_file.write(entry[0] + "\n")
 
         tweet_file.close()
