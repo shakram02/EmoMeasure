@@ -6,7 +6,7 @@ from collections import Counter, OrderedDict
 from nltk.corpus import stopwords
 from nltk.stem.lancaster import LancasterStemmer
 
-from src.utils.file_utils import get_file_name
+from emoMeasure.utils.file_utils import get_directory_name, get_file_name, make_directory, create_file_path
 
 
 def partitionize(raw_lines):
@@ -48,13 +48,26 @@ def strip_redundant_chars_words(text_lines):
     """
     Removes stop words then stems the remaining words
     """
+
+    def sanitize_chars(word):
+        """
+        Removes non alphanum chars in a given word
+        """
+        sanitized = ""
+        for c in word:
+            if not str.isalnum(c):
+                continue
+            sanitized += c
+
+        return sanitized
+
     stop_words = set(stopwords.words('english'))
     result = []
     st = LancasterStemmer()
 
     for i, line in enumerate(text_lines):
         split_line = line.split()
-        resultwords = [st.stem(word) for word in split_line if word not in stop_words]
+        resultwords = [st.stem(sanitize_chars(word)) for word in split_line if word not in stop_words]
 
         result.append(' '.join(resultwords))
 
@@ -142,7 +155,7 @@ def main():
     if check_debug():
         # In debug mode
         # file_name = input("Filename:")
-        file_name = "../dataset/english_dev/2018-EI-reg-En-sadness-dev.txt"
+        file_name = "../../dataset/english_dev/2018-EI-reg-En-sadness-dev.txt"
     else:
         file_name = sys.argv[1]
 
@@ -160,11 +173,11 @@ def main():
 
     # TODO write file content
     for entry in processed_input:
-        out_file.write("\t".join(entry))
-        tweet_file.write(entry[0])
+        out_file.write("\t".join(entry) + "\n")
+        tweet_file.write(entry[0] + "\n")
 
     tweet_file.close()
-    print_stats(processed_input, out_file)
+    print_stats([x[0] for x in processed_input], out_file)
     out_file.close()
 
 
