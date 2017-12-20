@@ -6,7 +6,8 @@ from collections import Counter, OrderedDict
 from nltk.corpus import stopwords
 from nltk.stem.lancaster import LancasterStemmer
 
-from emoMeasure.utils.file_utils import get_directory_name, get_file_name, make_directory, create_file_path
+from emoMeasure.utils.file_utils import get_directory_name, get_file_name, make_directory, create_file_path, \
+    get_file_names
 
 
 class TweetEntry(object):
@@ -147,30 +148,32 @@ def main():
     if check_debug():
         # In debug mode
         # file_name = input("Filename:")
-        file_name = "../../dataset/english_dev/2018-EI-oc-En-sadness-dev.txt"
+        file_names = get_file_names("../../dataset/english_dev/")
     else:
-        file_name = sys.argv[1]
+        file_names = sys.argv[1:]
 
-    processed_input = preprocess(file_name)
+    for file_name in file_names:
+        processed_input = preprocess(file_name)
 
-    dir_name = get_directory_name(file_name)
-    dataset_name = get_file_name(file_name)
-    out_folder = make_directory("stats_" + dataset_name, dir_name)
+        dir_name = get_directory_name(file_name)
+        dataset_name = get_file_name(file_name)
+        out_folder = make_directory("stats_" + dataset_name, dir_name)
 
-    out_path = create_file_path(dataset_name + "_out", out_folder)
-    tweet_out_path = create_file_path(dataset_name + "_tweet_out", out_folder)
+        out_path = create_file_path(dataset_name + "_out", out_folder)
+        tweet_out_path = create_file_path(dataset_name + "_tweet_out", out_folder)
 
-    out_file = open(out_path, mode='w')
-    tweet_file = open(tweet_out_path, mode='w')
+        out_file = open(out_path, mode='w')
+        tweet_file = open(tweet_out_path, mode='w')
 
-    # TODO write file content
-    for entry in processed_input:
-        out_file.write("\t".join(entry) + "\n")
-        tweet_file.write(entry[0] + "\n")
+        # TODO write file content
+        for entry in processed_input:
+            # Write only factor and the tweet
+            out_file.write("\t".join([entry[1], entry[0]]) + "\n")
+            tweet_file.write(entry[0] + "\n")
 
-    tweet_file.close()
-    print_stats([x[0] for x in processed_input], out_file)
-    out_file.close()
+        tweet_file.close()
+        print_stats([x[0] for x in processed_input], out_file)
+        out_file.close()
 
 
 if __name__ == "__main__":
