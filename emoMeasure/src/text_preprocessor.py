@@ -1,5 +1,4 @@
 import re
-import string
 import sys
 from collections import Counter, OrderedDict
 
@@ -7,6 +6,17 @@ from nltk.corpus import stopwords
 from nltk.stem.lancaster import LancasterStemmer
 
 from emoMeasure.utils.file_utils import get_directory_name, get_file_name, make_directory, create_file_path
+
+
+class TweetEntry(object):
+    def __init__(self, tweet_id, text, feel, intensity):
+        self.tweet_id: str = tweet_id
+        self.text: str = text
+        self.feel: str = feel
+        self.intensity: str = intensity
+
+    def __str__(self):
+        return "{}\t{}\t{}".format(self.text, self.feel, self.intensity)
 
 
 def partitionize(raw_lines):
@@ -21,27 +31,10 @@ def partitionize(raw_lines):
     return result
 
 
-def strip_emojis(text_lines):
-    emoji_pattern = re.compile('['
-                               u'\U00010000-\U0010ffff'
-                               u'\U0001F600-\U0001F64F'  # emoticons
-                               u'\U0001F300-\U0001F5FF'  # symbols & pictographs
-                               u'\U0001F680-\U0001F6FF'  # transport & map symbols
-                               u'\U0001F1E0-\U0001F1FF'  # flags (iOS)
-                               ']+', flags=re.UNICODE)
-
-    return [emoji_pattern.sub(r'', l) for l in text_lines]
-
-
 def strip_mentions(text_lines):
     mention_pattern = re.compile("@\w+")
     # $ % & '()*+,-./:;<=>?@[\]^_`{|}~
     return [mention_pattern.sub('', l) for l in text_lines]
-
-
-def strip_punctuation(text_lines):
-    translator = str.maketrans('', '', string.punctuation)
-    return [l.translate(translator) for l in text_lines]
 
 
 def strip_redundant_chars_words(text_lines):
@@ -67,11 +60,15 @@ def strip_redundant_chars_words(text_lines):
 
     for i, line in enumerate(text_lines):
         split_line = line.split()
-        resultwords = [st.stem(sanitize_chars(word)) for word in split_line if word not in stop_words]
-
+        resultwords = [st.stem(sanitize_chars(word.strip())) for word in split_line if word not in stop_words]
         result.append(' '.join(resultwords))
 
     return result
+
+
+def strip_extra_space(text_lines):
+    space_remover = re.compile("\s{2,}")
+    return [space_remover.sub(" ", x.strip()) for x in text_lines]
 
 
 def strip(tweet_lines):
@@ -81,16 +78,13 @@ def strip(tweet_lines):
     mention_stripped = strip_mentions(tweet_lines)
     del tweet_lines
 
-    emoji_stripped = strip_emojis(mention_stripped)
+    stopwords_stripped = strip_redundant_chars_words(mention_stripped)
     del mention_stripped
 
-    punctuation_stripped = strip_punctuation(emoji_stripped)
-    del emoji_stripped
+    space_stripped = strip_extra_space(stopwords_stripped)
+    del stopwords_stripped
 
-    stopwords_stipped = strip_redundant_chars_words(punctuation_stripped)
-    del punctuation_stripped
-
-    return stopwords_stipped
+    return space_stripped
 
 
 def read_raw_lower_cased(file_name):
@@ -102,6 +96,7 @@ def read_raw_lower_cased(file_name):
     fd = open(file_name, encoding='UTF-8')
 
     text = fd.read()
+    text = text.replace("\\n", " ")
     return text.lower()
 
 
@@ -163,7 +158,7 @@ def main():
 
     dir_name = get_directory_name(file_name)
     dataset_name = get_file_name(file_name)
-    out_folder = make_directory("stats", dir_name)
+    out_folder = make_directory("stats_" + dataset_name, dir_name)
 
     out_path = create_file_path(dataset_name + "_out", out_folder)
     tweet_out_path = create_file_path(dataset_name + "_tweet_out", out_folder)
