@@ -6,6 +6,8 @@ from collections import Counter, OrderedDict
 from nltk.corpus import stopwords
 from nltk.stem.lancaster import LancasterStemmer
 
+from src.utils.file_utils import get_file_name
+
 
 def partitionize(raw_lines):
     result = []
@@ -128,19 +130,11 @@ def preprocess(file_name):
 
     stripped_text = strip([data_line[0] for data_line in result])
 
-    out_file = open(file_name + '_out.txt', mode='w')
-    tweet_file = open(file_name + '_tweets_only_out.txt', mode='w')
     # Insert the stripped twees to their place
     for i, data_line in enumerate(result):
         result[i][0] = stripped_text[i]
 
-        tweet_file.write(stripped_text[i] + "\n")
-        out_file.write('\t'.join(result[i]) + "\n")
-
-    tweet_file.close()
-
-    print_stats(stripped_text, out_file)
-    out_file.close()
+    return result
 
 
 def main():
@@ -152,7 +146,26 @@ def main():
     else:
         file_name = sys.argv[1]
 
-    preprocess(file_name)
+    processed_input = preprocess(file_name)
+
+    dir_name = get_directory_name(file_name)
+    dataset_name = get_file_name(file_name)
+    out_folder = make_directory("stats", dir_name)
+
+    out_path = create_file_path(dataset_name + "_out", out_folder)
+    tweet_out_path = create_file_path(dataset_name + "_tweet_out", out_folder)
+
+    out_file = open(out_path, mode='w')
+    tweet_file = open(tweet_out_path, mode='w')
+
+    # TODO write file content
+    for entry in processed_input:
+        out_file.write("\t".join(entry))
+        tweet_file.write(entry[0])
+
+    tweet_file.close()
+    print_stats(processed_input, out_file)
+    out_file.close()
 
 
 if __name__ == "__main__":

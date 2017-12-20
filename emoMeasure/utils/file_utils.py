@@ -47,3 +47,7 @@ def get_file_name(file_path):
     """
     basename = path.basename(file_path)
     return path.splitext(basename)[0]
+
+
+def create_file_path(file_name, directory_path, extension=".txt"):
+    return path.join(directory_path, (file_name + extension))
