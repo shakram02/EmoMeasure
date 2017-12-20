@@ -16,7 +16,7 @@ def make_directory(dir_name, folder_path):
     directory = path.join(folder_path, dir_name)
 
     if path.exists(directory):
-        return
+        return directory
 
     makedirs(directory)
 
