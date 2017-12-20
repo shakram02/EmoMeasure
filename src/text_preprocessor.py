@@ -90,7 +90,7 @@ def read_raw_lower_cased(file_name):
     return text.lower()
 
 
-def print_stats(stripped_text):
+def print_stats(stripped_text, file=sys.stdout):
     """
     Creates some statistics about the provided text like word count
     """
@@ -108,10 +108,10 @@ def print_stats(stripped_text):
             continue
         count += 1
 
-    print(count)
-    print("Total count of items:", len(counter))
+    # print(count)
+    # print("Total count of items:", len(counter))
     # print(len(counter.most_common(1)))
-    # pp.pprint(OrderedDict(counter.most_common(1)))
+    pp.pprint(OrderedDict(counter.most_common()), stream=file)
 
 
 def preprocess(file_name):
@@ -128,11 +128,19 @@ def preprocess(file_name):
 
     stripped_text = strip([data_line[0] for data_line in result])
 
+    out_file = open(file_name + '_out.txt', mode='w')
+    tweet_file = open(file_name + '_tweets_only_out.txt', mode='w')
+    # Insert the stripped twees to their place
     for i, data_line in enumerate(result):
         result[i][0] = stripped_text[i]
 
-    import pprint as pp
-    pp.pprint(result)
+        tweet_file.write(stripped_text[i] + "\n")
+        out_file.write('\t'.join(result[i]) + "\n")
+
+    tweet_file.close()
+
+    print_stats(stripped_text, out_file)
+    out_file.close()
 
 
 def main():
@@ -140,7 +148,7 @@ def main():
     if check_debug():
         # In debug mode
         # file_name = input("Filename:")
-        file_name = "../dataset/english_dev/2018-EI-reg-En-anger-dev.txt"
+        file_name = "../dataset/english_dev/2018-EI-reg-En-sadness-dev.txt"
     else:
         file_name = sys.argv[1]
 
