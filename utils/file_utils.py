@@ -37,3 +37,13 @@ def get_file_names(directory_path, extension="*", recursive=False):
         path_list = glob.glob(path.join(directory_path, "*." + extension), recursive=recursive)
 
     return filter(lambda x: path.isfile(x), path_list)
+
+
+def get_file_name(file_path):
+    """
+    Rturns the file name of the supplied path without extension
+    ex: '/root/dir/sub/toto.ext' returns 'toto'
+    :param file_path: path of the target file
+    """
+    basename = path.basename(file_path)
+    return path.splitext(basename)[0]
