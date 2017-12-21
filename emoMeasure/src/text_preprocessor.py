@@ -148,7 +148,7 @@ def main():
     if check_debug():
         # In debug mode
         # file_name = input("Filename:")
-        file_names = get_file_names("../../dataset/english_dev/")
+        file_names = get_file_names("../../dataset/english_train/", extension="txt")
     else:
         file_names = sys.argv[1:]
 
@@ -168,8 +168,10 @@ def main():
         # TODO write file content
         for entry in processed_input:
             # Write only factor and the tweet
-            out_file.write("\t".join([entry[2], entry[0]]) + "\n")
-            tweet_file.write(entry[0] + "\n")
+            intensity = entry[2]
+            text = entry[0]
+            tweet_file.write(" ".join(["__label__" + intensity, text]) + "\n")
+            out_file.write(text + "\n")
 
         tweet_file.close()
         print_stats([x[0] for x in processed_input], out_file)
